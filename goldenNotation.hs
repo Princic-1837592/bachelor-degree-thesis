@@ -2,6 +2,8 @@
 
 
 
+
+
 -- simplified notation stream
 type SNStream = [Int]
 
@@ -25,13 +27,12 @@ printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
 -- simplified addition
 -- Definition 6: A
 sAddition :: SNStream -> SNStream -> Int -> Int -> SNStream
-sAddition (  0:as)  (  0:bs)  0 b =   0:sAddition    as     bs        b 0
-sAddition (0:0:as)  (  0:bs)  1 b =   0:sAddition (b:as)    bs        1 1
-sAddition (0:1:as)  (0:1:bs)  1 1 = 1:0:sAddition    as     bs        0 1
-sAddition (0:0:as)  (1:0:bs)  1 0 = 0:1:sAddition    as     bs        1 0
-sAddition (  0:as)  (  1:bs)  1 1 =   1:sAddition    as     bs        0 0
-sAddition (  1:as)  (  1:bs)  1 b =   1:sAddition    as     bs        b 1
-
+sAddition (   0:as) (   0:bs) 0 b =   0:sAddition       as        bs  b 0
+sAddition ( 0:0:as) (   0:bs) 1 b =   0:sAddition (   b:as)       bs  1 1
+sAddition ( 0:1:as) ( 0:1:bs) 1 1 = 1:0:sAddition       as        bs  0 1
+sAddition ( 0:0:as) ( 1:0:bs) 1 0 = 0:1:sAddition       as        bs  1 0
+sAddition (   0:as) (   1:bs) 1 1 =   1:sAddition       as        bs  0 0
+sAddition (   1:as) (   1:bs) 1 b =   1:sAddition       as        bs  b 1
 sAddition (   1:as) (   0:bs) a b =     sAddition (   0:as) (   1:bs) a b
 sAddition       as  (   1:bs) 0 b =     sAddition       as  (   0:bs) 1 b
 sAddition (a':1:as) (b':0:bs) a b =     sAddition (a':0:as) (b':1:bs) a b
@@ -61,7 +62,7 @@ subtraction :: FNStream -> FNStream -> FNStream
 subtraction (z, as) (t, bs) = if z==t then (z+1, sAddition as (sComplement bs) 1 1) else (if z<t then subtraction (z+1, 1:0:as) (t, bs) else subtraction (z, as) (t+1, 1:0:bs))
 
 -- simplified multiplication
--- Definition 11: P
+-- Definition 11 P
 sMultiplication :: SNStream -> SNStream -> SNStream
 sMultiplication (  0:as) (    bs) = 0:sMultiplication as bs
 sMultiplication (    as) (  0:bs) = 0:sMultiplication as bs
@@ -71,9 +72,10 @@ sMultiplication (1:0:as) (1:1:bs) =   sAddition (sAddition    as  (0:bs) 0 0) (0
 sMultiplication (1:1:as) (1:1:bs) =   sAddition (sAddition    as     bs  0 0) (0:0:sMultiplication as bs) 1 1
 
 -- full multiplication
--- Definition 12: P'
+-- Definition 12 P'
 multiplication :: FNStream -> FNStream -> FNStream
 multiplication (z, as) (t, bs) = (z+t+2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
+
 
 
 main = putStrLn "golden notation"
