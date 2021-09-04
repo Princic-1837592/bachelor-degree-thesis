@@ -1,6 +1,6 @@
 import System.Random
 
-randomSNSStream gen = (mod bit 2):randomSNSStream gen' where (bit, gen') = next gen
+randomSNStream gen = (mod bit 2):randomSNStream gen' where (bit, gen') = next gen
 
 pureGen = mkStdGen 137
 

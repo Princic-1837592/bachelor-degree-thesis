@@ -1,5 +1,7 @@
 -- https://users.dimi.uniud.it/~pietro.digianantonio/papers/copy_pdf/golden.pdf
 
+import System.Random
+
 
 -- simplified notation stream
 type SNStream = [Int]
@@ -117,24 +119,13 @@ minusOne = (0, zeros)
 
 
 
-
-approx :: FNStream -> Int -> FNStream
+-- il secondo elemento non è infinito
+approx :: FNStream -> Int -> (Int, [Int])
 approx (z, as) n = (z, take n as)
 
 printApprox :: FNStream -> Int -> String
 printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
     (z, as) = approx x n
-
--- https://www.wolframalpha.com
-toWolfram :: FNStream -> Int -> String
-toWolfram x n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*" ++ sphi ++ "^(2*" ++ show z ++ ")" where
-    (z, as) = approx x n
-    f' 1 i = sphi ++ "^(" ++ show i ++ ")"
-    f' 0 _ = ""
-    f x [] = x
-    f x xs = x++('+':xs)
-    sphi = "((sqrt(5)+1)/2)"
-    sums = foldr f "" (filter (\s -> length s > 0) (map (uncurry f') (zip as [-1,-2..])))
 
 -- phi = (sqrt(5)+1)/2
 toString :: FNStream -> Int -> String
@@ -148,48 +139,47 @@ toString x n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*phi^
 
 -- https://keisan.casio.com/calculator
 toKeisanCasio :: FNStream -> Int -> String -> String
-toKeisanCasio x n s = "\n" ++ s ++ " = " ++ toString x n ++ ";\n" ++ s ++ ";\n"
+toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name ++ ";\n"
+
+randomSNStream :: RandomGen g => g -> SNStream
+randomSNStream gen = (mod bit 2):randomSNStream gen' where (bit, gen') = next gen
+
+randomFNStream :: RandomGen g => g -> FNStream
+randomFNStream gen = (x, randomSNStream gen') where (x, gen') = next gen
+
+randomFNStreamBound :: RandomGen g => g -> Int -> Int -> Int -> SNStream -> FNStream
+randomFNStreamBound gen a b n s = ((mod x (b+1-a)) + a, take n xs++s) where (x, xs) = randomFNStream gen
 
 
 
-two ::FNStream
-two = addition one one
 
-a = ( 3,                           1:1:1:zeros)
-b = ( 5,                             0:1:zeros)
-c = (11,         1:1:0:1:0:0:1:0:1:0:0:1:zeros)
-d = ( 6, 1:0:0:0:0:1:1:0:0:0:1:1:0:0:1:1:zeros)
-f = ( 9, 1:0:1:0:0:0:1:0:1:0:1:0:1:0:1:0:zeros)
-g = (13, 1:1:0:0:1:1:0:0:0:0:0:0:0:0:0:1:zeros)
-allSum = foldl addition a [b,c,d,f,g]
-allSub = foldl subtraction zero [a,b,c,d,f,g]
-allSumPlusAllSub = addition allSum allSub
-
--- main = do {
---     putStrLn $ toKeisanCasio zero     10 "zero";
---     putStrLn $ toKeisanCasio one      10 "one";
---     putStrLn $ toKeisanCasio minusOne 10 "minusOne";
---     putStrLn $ toKeisanCasio two 10 "two";
---     -- putStrLn "\n\n\n\n";
---     -- putStrLn $ toKeisanCasio (addition one (subtraction two (subtraction minusOne two))) 5000 "maybeSix"; -- corretto
---     putStrLn "\n\n\n\n";
---     -- putStrLn $ toKeisanCasio (multiplication two minusOne) 6000 "maybeMinusTwo";
---     putStrLn $ toWolfram (multiplication two minusOne) 20;
---     print True;
--- }
 main = do {
-    putStrLn "phi = (sqrt(5)+1)/2;";
-    -- putStrLn $ toKeisanCasio a 200 "a";
-    -- putStrLn $ toKeisanCasio b 200 "b";
-    -- putStrLn $ toKeisanCasio c 200 "c";
-    -- putStrLn $ toKeisanCasio d 200 "d";
-    -- putStrLn $ toKeisanCasio f 200 "f";
-    -- putStrLn $ toKeisanCasio g 200 "g";
-    -- putStrLn "\n\n\n\n";
-    -- putStrLn $ toKeisanCasio (addition a f) 200 "aPlusF";
-    -- putStrLn $ toKeisanCasio (addition d g) 200 "dPlusG";
-    -- putStrLn $ toKeisanCasio (addition f (addition d g)) 200 "fPlusDPlusG";
-    -- putStrLn $ toKeisanCasio (allSum) 200 "sum";
-    -- putStrLn $ toKeisanCasio (allSub) 2000 "sub";
-    putStrLn $ toKeisanCasio (allSumPlusAllSub) 5000 "maybeZero";
+    gen <- newStdGen;
+    a <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    b <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    c <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    d <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    f <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    g <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
+    putStrLn $ toKeisanCasio a 1000 "a";
+    putStrLn $ toKeisanCasio b 1000 "b";
+    putStrLn $ toKeisanCasio c 1000 "c";
+    putStrLn $ toKeisanCasio d 1000 "d";
+    putStrLn $ toKeisanCasio f 1000 "f";
+    putStrLn $ toKeisanCasio g 1000 "g";
+    -- putStrLn $ "a-b;"++toKeisanCasio (subtraction a b) 1000 "aMinusB";
+    -- putStrLn $ "c-d;"++toKeisanCasio (subtraction c d) 1000 "cMinusD";
+    -- putStrLn $ "f-g;"++toKeisanCasio (subtraction f g) 1000 "fMinusG";
+    -- putStrLn $ "b-a;"++toKeisanCasio (subtraction b a) 1000 "bMinusA";
+    -- putStrLn $ "d-c;"++toKeisanCasio (subtraction d c) 1000 "dMinusC";
+    -- putStrLn $ "g-f;"++toKeisanCasio (subtraction g f) 1000 "gMinusF";
+    putStrLn $ "a*b;"++toKeisanCasio (multiplication a b) 1000 "aTimesB";
+    putStrLn $ "c*d;"++toKeisanCasio (multiplication c d) 1000 "cTimesD";
+    putStrLn $ "f*g;"++toKeisanCasio (multiplication f g) 1000 "fTimesG";
 }
