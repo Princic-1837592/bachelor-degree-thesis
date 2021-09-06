@@ -53,8 +53,8 @@ subtraction (z, as) (t, bs) = if z==t then (z+1, sAddition as (sComplement bs) 1
 -- simplified multiplication
 -- Definition 11: P
 sMultiplication :: SNStream -> SNStream -> SNStream
-sMultiplication (  0:as) (    bs) = 0:sMultiplication as bs
-sMultiplication (    as) (  0:bs) = 0:sMultiplication as bs
+sMultiplication (  0:as)      bs  = 0:sMultiplication as bs
+sMultiplication      as  (  0:bs) = 0:sMultiplication as bs
 sMultiplication (1:0:as) (1:0:bs) = 0:sAddition (sAddition    as     bs  0 0) (  0:sMultiplication as bs) 1 0
 sMultiplication (1:1:as) (1:0:bs) =   sAddition (sAddition (0:as)    bs  0 0) (0:0:sMultiplication as bs) 1 0
 sMultiplication (1:0:as) (1:1:bs) =   sAddition (sAddition    as  (0:bs) 0 0) (0:0:sMultiplication as bs) 1 0
@@ -158,7 +158,8 @@ c = (11,         1:1:0:1:0:0:1:0:1:0:0:1:zeros)
 d = ( 6, 1:0:0:0:0:1:1:0:0:0:1:1:0:0:1:1:zeros)
 f = ( 9, 1:0:1:0:0:0:1:0:1:0:1:0:1:0:1:0:zeros)
 g = (13, 1:1:0:0:1:1:0:0:0:0:0:0:0:0:0:1:zeros)
-allSum = foldl addition a [b,c,d,f,g]
+h = ( 7, 1:0:1:1:1:0:0:1:0:0:0:1:0:0:1:0:ones )
+allSum = foldl addition zero [a,b,c,d,f,g,h]
 allSub = foldl subtraction zero [a,b,c,d,f,g]
 allSumPlusAllSub = addition allSum allSub
 
@@ -176,8 +177,8 @@ allSumPlusAllSub = addition allSum allSub
 -- }
 main = do {
     putStrLn "phi = (sqrt(5)+1)/2;";
-    -- putStrLn $ toKeisanCasio a 200 "a";
-    -- putStrLn $ toKeisanCasio b 200 "b";
+    putStrLn $ toKeisanCasio a 200 "a";
+    putStrLn $ toKeisanCasio b 200 "b";
     -- putStrLn $ toKeisanCasio c 200 "c";
     -- putStrLn $ toKeisanCasio d 200 "d";
     -- putStrLn $ toKeisanCasio f 200 "f";
@@ -188,5 +189,6 @@ main = do {
     -- putStrLn $ toKeisanCasio (addition f (addition d g)) 200 "fPlusDPlusG";
     -- putStrLn $ toKeisanCasio (allSum) 200 "sum";
     -- putStrLn $ toKeisanCasio (allSub) 2000 "sub";
-    putStrLn $ toKeisanCasio (allSumPlusAllSub) 5000 "maybeZero";
+    -- putStrLn $ toKeisanCasio (allSumPlusAllSub) 5000 "maybeZero";
+    putStrLn $ toKeisanCasio (multiplication a b) 5000 "aTimesB";
 }
