@@ -1,5 +1,8 @@
 -- https://users.dimi.uniud.it/~pietro.digianantonio/papers/copy_pdf/golden.pdf
 
+import System.Random
+
+
 -- simplified notation stream
 type SNStream = [Int]
 
@@ -64,6 +67,7 @@ sMultiplication (1:1:as) (1:1:bs) =   sAddition (sAddition    as     bs  0 0) (0
 
 -- full multiplication
 -- Definition 12: P'
+-- controllare algoritmo di Karatsuba ([8])
 multiplication :: FNStream -> FNStream -> FNStream
 multiplication (z, as) (t, bs) = (z+t+2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
 
@@ -109,4 +113,101 @@ minusOne = (0, zeros)
 
 
 
-main = putStrLn "golden notation"
+
+
+---------------------------------------------
+
+
+
+-- il secondo elemento non è infinito
+approx :: FNStream -> Int -> (Int, [Int])
+approx (z, as) n = (z, take n as)
+
+printApprox :: FNStream -> Int -> String
+printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
+    (z, as) = approx x n
+
+sToString :: SNStream -> Int -> String
+sToString xs n = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
+    as = take n xs
+    f x [] = x
+    f x xs = x ++ ('+':xs)
+    f' 1 i = "phi^(" ++ show i ++ ")"
+    -- f' 0 _ = ""
+
+-- phi = (sqrt(5)+1)/2
+toString :: FNStream -> Int -> String
+toString (z, as) n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*phi^(2*" ++ show z ++ ")" where
+    sums = sToString as n
+
+-- https://keisan.casio.com/calculator
+toKeisanCasio :: FNStream -> Int -> String -> String
+toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name ++ ";\n"
+
+randomSNStream :: RandomGen g => g -> SNStream
+randomSNStream gen = (fromIntegral (mod bit 2)):randomSNStream gen' where (bit, gen') = genWord8 gen
+
+randomFNStream :: RandomGen g => g -> FNStream
+randomFNStream gen = (fromIntegral x, randomSNStream gen') where (x, gen') = genWord8 gen
+
+randomFNStreamBound :: RandomGen g => g -> Int -> Int -> Int -> SNStream -> FNStream
+randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take n xs ++ s) else xs) where (x, xs) = randomFNStream gen
+
+
+
+
+-- main = do {
+    -- gen <- newStdGen;
+    -- a <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- gen <- newStdGen;
+    -- b <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- gen <- newStdGen;
+    -- c <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- gen <- newStdGen;
+    -- d <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- gen <- newStdGen;
+    -- f <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- gen <- newStdGen;
+    -- g <- pure $ randomFNStreamBound gen 0 10 200 zeros;
+    -- putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
+    -- putStrLn $ toKeisanCasio a 1000 "a";
+    -- putStrLn $ toKeisanCasio b 1000 "b";
+    -- putStrLn $ toKeisanCasio c 1000 "c";
+    -- putStrLn $ toKeisanCasio d 1000 "d";
+    -- putStrLn $ toKeisanCasio f 1000 "f";
+    -- putStrLn $ toKeisanCasio g 1000 "g";
+    -- -- putStrLn $ "a-b;"++toKeisanCasio (subtraction a b) 1000 "aMinusB";
+    -- -- putStrLn $ "c-d;"++toKeisanCasio (subtraction c d) 1000 "cMinusD";
+    -- -- putStrLn $ "f-g;"++toKeisanCasio (subtraction f g) 1000 "fMinusG";
+    -- -- putStrLn $ "b-a;"++toKeisanCasio (subtraction b a) 1000 "bMinusA";
+    -- -- putStrLn $ "d-c;"++toKeisanCasio (subtraction d c) 1000 "dMinusC";
+    -- -- putStrLn $ "g-f;"++toKeisanCasio (subtraction g f) 1000 "gMinusF";
+    -- putStrLn $ "a*b;"++toKeisanCasio (multiplication a b) 1000 "aTimesB";
+    -- putStrLn $ "c*d;"++toKeisanCasio (multiplication c d) 1000 "cTimesD";
+    -- putStrLn $ "f*g;"++toKeisanCasio (multiplication f g) 1000 "fTimesG";
+-- }
+
+main = do {
+    gen <- newStdGen;
+    a <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    b <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    c <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    d <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    f <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    gen <- newStdGen;
+    g <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
+    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
+    putStrLn $ "\na = " ++ sToString a 220 ++ ";\na;";
+    putStrLn $ "\nb = " ++ sToString b 220 ++ ";\nb;";
+    putStrLn $ "\nc = " ++ sToString c 220 ++ ";\nc;";
+    putStrLn $ "\nd = " ++ sToString d 220 ++ ";\nd;";
+    putStrLn $ "\nf = " ++ sToString f 220 ++ ";\nf;";
+    putStrLn $ "\ng = " ++ sToString g 220 ++ ";\ng;";
+    putStrLn $ "\n(a*b)/(phi^2);\naTimesB = " ++ sToString (sMultiplication a b) 1000 ++ ";\naTimesB;";
+    putStrLn $ "\n(c*d)/(phi^2);\ncTimesD = " ++ sToString (sMultiplication c d) 1000 ++ ";\ncTimesD;";
+    putStrLn $ "\n(f*g)/(phi^2);\nfTimesG = " ++ sToString (sMultiplication f g) 1000 ++ ";\nfTimesG;";
+}
