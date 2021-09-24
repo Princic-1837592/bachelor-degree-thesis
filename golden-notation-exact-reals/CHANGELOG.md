@@ -1,4 +1,4 @@
-# Revision history for testCabal
+# Revision history for golden-notation-exact-reals
 
 ## 0.1.0.0 -- YYYY-mm-dd
 

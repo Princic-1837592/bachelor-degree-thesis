@@ -2,9 +2,20 @@
 
 import System.Random
 
+-- tipo che rappresenta un bit
+data Bit = B0 | B1 deriving Eq
+
+-- istanza di Num necessaria a rendere compatibile il tipo Bit con i literals 0 e 1
+instance Num Bit where
+    fromInteger 0 = B0
+    fromInteger 1 = B1
+
+instance Show Bit where
+    show B0 = "0"
+    show B1 = "1"
 
 -- simplified notation stream
-type SNStream = [Int]
+type SNStream = [Bit]
 
 {-
 full notation stream
@@ -18,7 +29,7 @@ type FNStream = (Int, SNStream)
 
 -- simplified addition
 -- Definition 6: A
-sAddition :: SNStream -> SNStream -> Int -> Int -> SNStream
+sAddition :: SNStream -> SNStream -> Bit -> Bit -> SNStream
 sAddition (   0:as) (   0:bs) 0 b =   0:sAddition       as        bs  b 0
 sAddition ( 0:0:as) (   0:bs) 1 b =   0:sAddition (   b:as)       bs  1 1
 sAddition ( 0:1:as) ( 0:1:bs) 1 1 = 1:0:sAddition       as        bs  0 1
@@ -34,7 +45,7 @@ sAddition       as  (b':1:bs) a 0 =     sAddition       as  (b':0:bs) a 1
 -- full addition
 -- Definition 7: A'
 addition :: FNStream -> FNStream -> FNStream
-addition (z, as) (t, bs) = if z==t then (z+1, sAddition as bs 1 0) else (if z<t then addition (z+1, 1:0:as) (t, bs) else addition (z, as) (t+1, 1:0:bs))
+addition (z, as) (t, bs) = if z == t then (z+1, sAddition as bs 1 0) else (if z < t then addition (z + 1, 1:0:as) (t, bs) else addition (z, as) (t + 1, 1:0:bs))
 
 -- simplified complement
 -- Definition 8: C
@@ -45,7 +56,7 @@ sComplement (0:as) = 1:sComplement as
 -- full complement
 -- Definition 9: C'
 complement :: FNStream -> FNStream
-complement (z, as) = (z+1, complement' as) where
+complement (z, as) = (z + 1, complement' as) where
     complement' (  0:as) =   1:1:0:sComplement as
     complement' (1:0:as) =     1:0:complement' as
     complement' (1:1:as) = 1:0:0:1:sComplement as
@@ -53,7 +64,7 @@ complement (z, as) = (z+1, complement' as) where
 -- full subtraction
 -- Definition 10: S'
 subtraction :: FNStream -> FNStream -> FNStream
-subtraction (z, as) (t, bs) = if z==t then (z+1, sAddition as (sComplement bs) 1 1) else (if z<t then subtraction (z+1, 1:0:as) (t, bs) else subtraction (z, as) (t+1, 1:0:bs))
+subtraction (z, as) (t, bs) = if z == t then (z + 1, sAddition as (sComplement bs) 1 1) else (if z < t then subtraction (z + 1, 1:0:as) (t, bs) else subtraction (z, as) (t + 1, 1:0:bs))
 
 -- simplified multiplication
 -- Definition 11: P
@@ -69,7 +80,7 @@ sMultiplication (1:1:as) (1:1:bs) =   sAddition (sAddition    as     bs  0 0) (0
 -- Definition 12: P'
 -- controllare algoritmo di Karatsuba ([8])
 multiplication :: FNStream -> FNStream -> FNStream
-multiplication (z, as) (t, bs) = (z+t+2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
+multiplication (z, as) (t, bs) = (z + t + 2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
 
 -- simplified division
 -- Definition 13: D
@@ -86,13 +97,13 @@ sDivision as (1:bs) = sDivision' (0:0:as) (sComplement bs) where
 -- full division
 -- Definition 14: D'
 division :: FNStream -> FNStream -> FNStream
-division (z, as) (t,   0:bs) = division' (complement (z-t, as)) (0:sComplement bs)
-division (z, as) (t, 1:0:bs) = division (z, as) (t-1, bs)
-division (z, as) (t, 1:1:bs) = division' (z-t+1, as) bs
+division (z, as) (t,   0:bs) = division' (complement (z - t, as)) (0:sComplement bs)
+division (z, as) (t, 1:0:bs) = division (z, as) (t - 1, bs)
+division (z, as) (t, 1:1:bs) = division' (z - t + 1, as) bs
 
-division' (z, as) (0:0:bs) = division' (z+1, as) bs
-division' (z, as) (0:1:bs) = (z+1, sDivision (sAddition    as  bs 0 0) (sComplement bs))
-division' (z, as) (  1:bs) = (z+1, sDivision (sAddition (0:as) bs 0 1) (sComplement bs))
+division' (z, as) (0:0:bs) = division' (z + 1, as) bs
+division' (z, as) (0:1:bs) = (z + 1, sDivision (sAddition    as  bs 0 0) (sComplement bs))
+division' (z, as) (  1:bs) = (z + 1, sDivision (sAddition (0:as) bs 0 1) (sComplement bs))
 
 
 
@@ -120,7 +131,7 @@ minusOne = (0, zeros)
 
 
 -- il secondo elemento non è infinito
-approx :: FNStream -> Int -> (Int, [Int])
+approx :: FNStream -> Int -> (Int, [Bit])
 approx (z, as) n = (z, take n as)
 
 printApprox :: FNStream -> Int -> String
@@ -144,14 +155,14 @@ toString (z, as) n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ "
 toKeisanCasio :: FNStream -> Int -> String -> String
 toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name ++ ";\n"
 
--- randomSNStream :: RandomGen g => g -> SNStream
--- randomSNStream gen = (fromIntegral (mod bit 2)):randomSNStream gen' where (bit, gen') = genWord8 gen
+randomSNStream :: RandomGen g => g -> SNStream
+randomSNStream gen = (fromIntegral (mod bit 2)):randomSNStream gen' where (bit, gen') = genWord8 gen
 
--- randomFNStream :: RandomGen g => g -> FNStream
--- randomFNStream gen = (fromIntegral x, randomSNStream gen') where (x, gen') = genWord8 gen
+randomFNStream :: RandomGen g => g -> FNStream
+randomFNStream gen = (fromIntegral x, randomSNStream gen') where (x, gen') = genWord8 gen
 
--- randomFNStreamBound :: RandomGen g => g -> Int -> Int -> Int -> SNStream -> FNStream
--- randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take n xs ++ s) else xs) where (x, xs) = randomFNStream gen
+randomFNStreamBound :: RandomGen g => g -> Int -> Int -> Int -> SNStream -> FNStream
+randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take n xs ++ s) else xs) where (x, xs) = randomFNStream gen
 
 
 
@@ -223,12 +234,24 @@ toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name 
 
 -- prove sulla divisione
 main = do {
-    a <- pure $ snd (1, [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]++zeros);
-    b <- pure $ snd (3, [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]++zeros);
-    c <- pure $ snd (5, [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0]++zeros);
-    d <- pure $ snd (9, [1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1]++zeros);
-    f <- pure $ snd (1, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0]++zeros);
-    g <- pure $ snd (3, [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1]++zeros);
+    gen <- newStdGen;
+    a <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    gen <- newStdGen;
+    b <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    gen <- newStdGen;
+    c <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    gen <- newStdGen;
+    d <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    gen <- newStdGen;
+    f <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    gen <- newStdGen;
+    g <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+    -- a <- pure $ snd (1, [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]++zeros);
+    -- b <- pure $ snd (3, [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]++zeros);
+    -- c <- pure $ snd (5, [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0]++zeros);
+    -- d <- pure $ snd (9, [1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1]++zeros);
+    -- f <- pure $ snd (1, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0]++zeros);
+    -- g <- pure $ snd (3, [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1]++zeros);
     putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
     putStrLn $ "\na = " ++ sToString a 220 ++ ";\na;";
     putStrLn $ "\nb = " ++ sToString b 220 ++ ";\nb;";
@@ -236,10 +259,10 @@ main = do {
     putStrLn $ "\nd = " ++ sToString d 220 ++ ";\nd;";
     putStrLn $ "\nf = " ++ sToString f 220 ++ ";\nf;";
     putStrLn $ "\ng = " ++ sToString g 220 ++ ";\ng;";
-    putStrLn $ "\naDb = " ++ sToString (sDivision a b) 2000 ++ ";\nabs(a/(b*phi) - aDb);";
-    putStrLn $ "\naTb = " ++ sToString (sMultiplication a b) 2000 ++ ";\nabs((a*b)/(phi^2) - aTb);";
-    putStrLn $ "\ncDd = " ++ sToString (sDivision c d) 2000 ++ ";\nabs(c/(d*phi) - cDd);";
-    putStrLn $ "\ncTd = " ++ sToString (sMultiplication c d) 2000 ++ ";\nabs((c*d)/(phi^2) - cTd);";
-    putStrLn $ "\nfDg = " ++ sToString (sDivision f g) 2000 ++ ";\nabs(f/(g*phi) - fDg);";
-    putStrLn $ "\nfTg = " ++ sToString (sMultiplication f g) 2000 ++ ";\nabs((f*g)/(phi^2) - fTg);";
+    putStrLn $ "\naDb = " ++ sToString (sDivision a b) 1000 ++ ";\nabs(a/(b*phi) - aDb);";
+    putStrLn $ "\naTb = " ++ sToString (sMultiplication a b) 1000 ++ ";\nabs((a*b)/(phi^2) - aTb);";
+    putStrLn $ "\ncDd = " ++ sToString (sDivision c d) 1000 ++ ";\nabs(c/(d*phi) - cDd);";
+    putStrLn $ "\ncTd = " ++ sToString (sMultiplication c d) 1000 ++ ";\nabs((c*d)/(phi^2) - cTd);";
+    putStrLn $ "\nfDg = " ++ sToString (sDivision f g) 1000 ++ ";\nabs(f/(g*phi) - fDg);";
+    putStrLn $ "\nfTg = " ++ sToString (sMultiplication f g) 1000 ++ ";\nabs((f*g)/(phi^2) - fTg);";
 }

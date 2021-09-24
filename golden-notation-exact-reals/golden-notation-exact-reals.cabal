@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               testCabal
+name:               golden-notation-exact-reals
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
@@ -10,10 +10,10 @@ version:            0.1.0.0
 
 -- A URL where users can report bugs.
 -- bug-reports:
-license:            NONE
 
--- The package author(s).
--- author:
+-- The license under which the package is released.
+-- license:
+author:             andrea
 maintainer:         princic.1837592@studenti.uniroma1.it
 
 -- A copyright notice.
@@ -21,7 +21,7 @@ maintainer:         princic.1837592@studenti.uniroma1.it
 -- category:
 extra-source-files: CHANGELOG.md
 
-executable testCabal
+executable golden-notation-exact-reals
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
@@ -29,8 +29,6 @@ executable testCabal
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.11.1.0, haskell-say ^>=1.0.0.0, exact-real, exact-real-positional
-    allow-newer: all
-    allow-older: all
+    build-depends:    base ^>=4.11.1.0
     hs-source-dirs:   app
     default-language: Haskell2010
