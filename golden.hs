@@ -2,17 +2,18 @@
 
 import System.Random
 
--- tipo che rappresenta un bit
-data Bit = B0 | B1 deriving Eq
+-- -- tipo che rappresenta un bit
+-- data Bit = B0 | B1 deriving Eq
 
--- istanza di Num necessaria a rendere compatibile il tipo Bit con i literals 0 e 1
-instance Num Bit where
-    fromInteger 0 = B0
-    fromInteger 1 = B1
+-- -- istanza di Num necessaria a rendere compatibile il tipo Bit con i literals 0 e 1
+-- instance Num Bit where
+--     fromInteger 0 = B0
+--     fromInteger 1 = B1
 
-instance Show Bit where
-    show B0 = "0"
-    show B1 = "1"
+-- instance Show Bit where
+--     show B0 = "0"
+--     show B1 = "1"
+type Bit = Int
 
 -- simplified notation stream
 type SNStream = [Bit]
@@ -25,7 +26,13 @@ full notation stream
 ho preferito usare una coppia invece che un unico stream
 perché fa capire meglio la differenza tra le due parti
 -}
-type FNStream = (Int, SNStream)
+type FNStream = (Integer, SNStream)
+
+
+
+------------------------------
+
+
 
 -- simplified addition
 -- Definition 6: A
@@ -107,6 +114,10 @@ division' (z, as) (  1:bs) = (z + 1, sDivision (sAddition (0:as) bs 0 1) (sCompl
 
 
 
+------------------------------
+
+
+
 zeros :: SNStream
 zeros = 0:zeros
 
@@ -125,35 +136,37 @@ minusOne = (0, zeros)
 
 
 
+------------------------------
 
 
----------------------------------------------
 
-
+take' :: Integer -> [a] -> [a]
+take' n [] = []
+take' n (x:xs) = if n <= 0 then [] else (x:take' (n - 1) xs)
 
 -- il secondo elemento non è infinito
-approx :: FNStream -> Int -> (Int, [Bit])
-approx (z, as) n = (z, take n as)
+approx :: FNStream -> Integer -> (Integer, [Bit])
+approx (z, as) n = (z, take' n as)
 
-printApprox :: FNStream -> Int -> String
+printApprox :: FNStream -> Integer -> String
 printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
     (z, as) = approx x n
 
-sToString :: SNStream -> Int -> String
+sToString :: SNStream -> Integer -> String
 sToString xs n = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
-    as = take n xs
+    as = take' n xs
     f x [] = x
     f x xs = x ++ ('+':xs)
     f' 1 i = "phi^(" ++ show i ++ ")"
     -- f' 0 _ = ""
 
 -- phi = (sqrt(5)+1)/2
-toString :: FNStream -> Int -> String
+toString :: FNStream -> Integer -> String
 toString (z, as) n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*phi^(2*" ++ show z ++ ")" where
     sums = sToString as n
 
 -- https://keisan.casio.com/calculator
-toKeisanCasio :: FNStream -> Int -> String -> String
+toKeisanCasio :: FNStream -> Integer -> String -> String
 toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name ++ ";\n"
 
 randomSNStream :: RandomGen g => g -> SNStream
@@ -162,9 +175,12 @@ randomSNStream gen = (fromIntegral (mod bit 2)):randomSNStream gen' where (bit, 
 randomFNStream :: RandomGen g => g -> FNStream
 randomFNStream gen = (fromIntegral x, randomSNStream gen') where (x, gen') = genWord8 gen
 
-randomFNStreamBound :: RandomGen g => g -> Int -> Int -> Int -> SNStream -> FNStream
-randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take n xs ++ s) else xs) where (x, xs) = randomFNStream gen
+randomFNStreamBound :: RandomGen g => g -> Integer -> Integer -> Integer -> SNStream -> FNStream
+randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take' n xs ++ s) else xs) where (x, xs) = randomFNStream gen
 
+
+
+------------------------------
 
 
 
