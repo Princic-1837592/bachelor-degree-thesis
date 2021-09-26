@@ -113,6 +113,7 @@ zeros = 0:zeros
 ones :: SNStream
 ones = 1:ones
 
+
 zero :: FNStream
 zero = (0, 1:1:zeros)
 
