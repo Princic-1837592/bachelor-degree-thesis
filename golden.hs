@@ -140,13 +140,13 @@ minusOne = (0, zeros)
 
 
 
-take' :: Integer -> [a] -> [a]
-take' n [] = []
-take' n (x:xs) = if n <= 0 then [] else (x:take' (n - 1) xs)
+takeI :: Integer -> [a] -> [a]
+takeI n [] = []
+takeI n (x:xs) = if n <= 0 then [] else (x:takeI (n - 1) xs)
 
 -- il secondo elemento non è infinito
 approx :: FNStream -> Integer -> (Integer, [Bit])
-approx (z, as) n = (z, take' n as)
+approx (z, as) n = (z, takeI n as)
 
 printApprox :: FNStream -> Integer -> String
 printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
@@ -154,7 +154,7 @@ printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
 
 sToString :: SNStream -> Integer -> String
 sToString xs n = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
-    as = take' n xs
+    as = takeI n xs
     f x [] = x
     f x xs = x ++ ('+':xs)
     f' 1 i = "phi^(" ++ show i ++ ")"
@@ -176,7 +176,7 @@ randomFNStream :: RandomGen g => g -> FNStream
 randomFNStream gen = (fromIntegral x, randomSNStream gen') where (x, gen') = genWord8 gen
 
 randomFNStreamBound :: RandomGen g => g -> Integer -> Integer -> Integer -> SNStream -> FNStream
-randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take' n xs ++ s) else xs) where (x, xs) = randomFNStream gen
+randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (takeI n xs ++ s) else xs) where (x, xs) = randomFNStream gen
 
 
 

@@ -1,0 +1,4 @@
+Name:				golden-exact-reals
+version:			0.1
+library
+	exposed-modules:	Data.GoldenExactReal
