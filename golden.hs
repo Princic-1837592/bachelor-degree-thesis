@@ -86,8 +86,11 @@ sMultiplication (1:1:as) (1:1:bs) =   sAddition (sAddition    as     bs  0 0) (0
 -- full multiplication
 -- Definition 12: P'
 -- controllare algoritmo di Karatsuba ([8])
+multiplication' :: FNStream -> FNStream -> FNStream
+multiplication' (z, as) (t, bs) = (z + t + 2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
+
 multiplication :: FNStream -> FNStream -> FNStream
-multiplication (z, as) (t, bs) = (z + t + 2, sAddition (sMultiplication as bs) (sComplement (sAddition as bs 0 0)) 1 0)
+multiplication (z, as) (t, bs) = complement (z + t + 2, sAddition (sComplement (sMultiplication as bs)) (sAddition as bs 0 0) 1 0)
 
 -- simplified division
 -- Definition 13: D
@@ -140,6 +143,54 @@ minusOne = (0, zeros)
 
 
 
+two :: FNStream
+two = (2, 1:1:0:1:1:1:zeros)
+
+three :: FNStream
+three = (2, 1:1:1:1:0:1:zeros)
+
+four :: FNStream
+four = (3, 1:1:0:1:0:1:0:1:zeros)
+
+five :: FNStream
+five = (3, 1:1:0:1:0:1:1:1:1:1:zeros)
+
+six :: FNStream
+six = (3, 1:1:0:1:1:1:0:1:1:1:zeros)
+
+seven :: FNStream
+seven = (3, 1:1:1:0:1:1:0:0:0:1:zeros)
+
+eight :: FNStream
+eight = (3, 1:1:1:1:0:1:0:0:0:1:zeros)
+
+nine :: FNStream
+nine = (3, 1:1:1:1:0:1:1:1:0:1:zeros)
+
+ten :: FNStream
+ten = (3, 1:1:1:1:1:1:0:1:0:1:zeros)
+
+naturalToGolden :: Integer -> FNStream
+naturalToGolden x = if x >= 0 then naturalToGolden' x zero one else multiplication minusOne (naturalToGolden' (-x) zero one) where
+    naturalToGolden' 0 r c = r
+    naturalToGolden' x r c = case (mod x 10) of
+        0 -> naturalToGolden' (div x 10) r (multiplication r ten)
+        1 -> naturalToGolden' (div x 10) (addition r (multiplication one   c)) (multiplication c ten)
+        2 -> naturalToGolden' (div x 10) (addition r (multiplication two   c)) (multiplication c ten)
+        3 -> naturalToGolden' (div x 10) (addition r (multiplication three c)) (multiplication c ten)
+        4 -> naturalToGolden' (div x 10) (addition r (multiplication four  c)) (multiplication c ten)
+        5 -> naturalToGolden' (div x 10) (addition r (multiplication five  c)) (multiplication c ten)
+        6 -> naturalToGolden' (div x 10) (addition r (multiplication six   c)) (multiplication c ten)
+        7 -> naturalToGolden' (div x 10) (addition r (multiplication seven c)) (multiplication c ten)
+        8 -> naturalToGolden' (div x 10) (addition r (multiplication eight c)) (multiplication c ten)
+        9 -> naturalToGolden' (div x 10) (addition r (multiplication nine  c)) (multiplication c ten)
+
+
+
+------------------------------
+
+
+
 takeI :: Integer -> [a] -> [a]
 takeI n [] = []
 takeI n (x:xs) = if n <= 0 then [] else (x:takeI (n - 1) xs)
@@ -184,58 +235,70 @@ randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take
 
 
 
--- main = do {
-    -- gen <- newStdGen;
-    -- a <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- gen <- newStdGen;
-    -- b <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- gen <- newStdGen;
-    -- c <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- gen <- newStdGen;
-    -- d <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- gen <- newStdGen;
-    -- f <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- gen <- newStdGen;
-    -- g <- pure $ randomFNStreamBound gen 0 10 200 zeros;
-    -- putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
-    -- putStrLn $ toKeisanCasio a 1000 "a";
-    -- putStrLn $ toKeisanCasio b 1000 "b";
-    -- putStrLn $ toKeisanCasio c 1000 "c";
-    -- putStrLn $ toKeisanCasio d 1000 "d";
-    -- putStrLn $ toKeisanCasio f 1000 "f";
-    -- putStrLn $ toKeisanCasio g 1000 "g";
-    -- -- putStrLn $ "a-b;"++toKeisanCasio (subtraction a b) 1000 "aMinusB";
-    -- -- putStrLn $ "c-d;"++toKeisanCasio (subtraction c d) 1000 "cMinusD";
-    -- -- putStrLn $ "f-g;"++toKeisanCasio (subtraction f g) 1000 "fMinusG";
-    -- -- putStrLn $ "b-a;"++toKeisanCasio (subtraction b a) 1000 "bMinusA";
-    -- -- putStrLn $ "d-c;"++toKeisanCasio (subtraction d c) 1000 "dMinusC";
-    -- -- putStrLn $ "g-f;"++toKeisanCasio (subtraction g f) 1000 "gMinusF";
-    -- putStrLn $ "a*b;"++toKeisanCasio (multiplication a b) 1000 "aTimesB";
-    -- putStrLn $ "c*d;"++toKeisanCasio (multiplication c d) 1000 "cTimesD";
-    -- putStrLn $ "f*g;"++toKeisanCasio (multiplication f g) 1000 "fTimesG";
--- }
+main = do {
+    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;\n";
+    putStrLn $ toKeisanCasio zero 220 "zero";
+    putStrLn $ toKeisanCasio one 220 "one";
+    putStrLn $ toKeisanCasio two 220 "two";
+    putStrLn $ toKeisanCasio three 220 "three";
+    putStrLn $ toKeisanCasio four 220 "four";
+    putStrLn $ toKeisanCasio five 220 "five";
+    putStrLn $ toKeisanCasio six 220 "six";
+    putStrLn $ toKeisanCasio seven 220 "seven";
+    putStrLn $ toKeisanCasio eight 220 "eight";
+    putStrLn $ toKeisanCasio nine 220 "nine";
+    putStrLn $ toKeisanCasio ten 220 "ten";
+    putStrLn $ toKeisanCasio (naturalToGolden (-465416846)) 1000 "x";
+}
 
 
 -- -- prove sulla moltiplicazione
 -- main = do {
---     -- gen <- newStdGen;
---     -- a <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     -- gen <- newStdGen;
---     -- b <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     -- gen <- newStdGen;
---     -- c <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     -- gen <- newStdGen;
---     -- d <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     -- gen <- newStdGen;
---     -- f <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     -- gen <- newStdGen;
---     -- g <- pure $ snd $ randomFNStreamBound gen 0 10 200 zeros;
---     a <- pure $ snd (1, [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]++zeros);
---     b <- pure $ snd (3, [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]++zeros);
---     c <- pure $ snd (5, [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0]++zeros);
---     d <- pure $ snd (9, [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1]++zeros);
---     f <- pure $ snd (1, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0]++zeros);
---     g <- pure $ snd (3, [0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1]++zeros);
+--     gen <- newStdGen;
+--     a <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     gen <- newStdGen;
+--     b <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     gen <- newStdGen;
+--     c <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     gen <- newStdGen;
+--     d <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     gen <- newStdGen;
+--     f <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     gen <- newStdGen;
+--     g <- pure $ randomFNStreamBound gen 0 10 100 zeros;
+--     putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;\n";
+--     putStrLn $ toKeisanCasio a 220 "a";
+--     putStrLn $ toKeisanCasio b 220 "b";
+--     putStrLn $ toKeisanCasio c 220 "c";
+--     putStrLn $ toKeisanCasio d 220 "d";
+--     putStrLn $ toKeisanCasio f 220 "f";
+--     putStrLn $ toKeisanCasio g 220 "g";
+--     putStrLn $ "a*b;" ++ toKeisanCasio (multiplication a b) 1000 "ab";
+--     putStrLn $ "c*d;" ++ toKeisanCasio (multiplication c d) 1000 "cd";
+--     putStrLn $ "f*g;" ++ toKeisanCasio (multiplication f g) 1000 "fg";
+-- }
+
+
+-- -- prove sulla divisione
+-- main = do {
+--     gen <- newStdGen;
+--     a <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     gen <- newStdGen;
+--     b <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     gen <- newStdGen;
+--     c <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     gen <- newStdGen;
+--     d <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     gen <- newStdGen;
+--     f <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     gen <- newStdGen;
+--     g <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
+--     -- a <- pure $ snd (1, [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]++zeros);
+--     -- b <- pure $ snd (3, [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]++zeros);
+--     -- c <- pure $ snd (5, [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0]++zeros);
+--     -- d <- pure $ snd (9, [1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1]++zeros);
+--     -- f <- pure $ snd (1, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0]++zeros);
+--     -- g <- pure $ snd (3, [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1]++zeros);
 --     putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
 --     putStrLn $ "\na = " ++ sToString a 220 ++ ";\na;";
 --     putStrLn $ "\nb = " ++ sToString b 220 ++ ";\nb;";
@@ -243,43 +306,10 @@ randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take
 --     putStrLn $ "\nd = " ++ sToString d 220 ++ ";\nd;";
 --     putStrLn $ "\nf = " ++ sToString f 220 ++ ";\nf;";
 --     putStrLn $ "\ng = " ++ sToString g 220 ++ ";\ng;";
---     putStrLn $ "\n(a*b)/(phi^2);\naTimesB = " ++ sToString (sMultiplication a b) 1000 ++ ";\naTimesB;";
---     putStrLn $ "\n(c*d)/(phi^2);\ncTimesD = " ++ sToString (sMultiplication c d) 1000 ++ ";\ncTimesD;";
---     putStrLn $ "\n(f*g)/(phi^2);\nfTimesG = " ++ sToString (sMultiplication f g) 1000 ++ ";\nfTimesG;";
+--     putStrLn $ "\naDb = " ++ sToString (sDivision a b) 1000 ++ ";\nabs(a/(b*phi) - aDb);";
+--     putStrLn $ "\naTb = " ++ sToString (sMultiplication a b) 1000 ++ ";\nabs((a*b)/(phi^2) - aTb);";
+--     putStrLn $ "\ncDd = " ++ sToString (sDivision c d) 1000 ++ ";\nabs(c/(d*phi) - cDd);";
+--     putStrLn $ "\ncTd = " ++ sToString (sMultiplication c d) 1000 ++ ";\nabs((c*d)/(phi^2) - cTd);";
+--     putStrLn $ "\nfDg = " ++ sToString (sDivision f g) 1000 ++ ";\nabs(f/(g*phi) - fDg);";
+--     putStrLn $ "\nfTg = " ++ sToString (sMultiplication f g) 1000 ++ ";\nabs((f*g)/(phi^2) - fTg);";
 -- }
-
-
--- prove sulla divisione
-main = do {
-    gen <- newStdGen;
-    a <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    gen <- newStdGen;
-    b <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    gen <- newStdGen;
-    c <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    gen <- newStdGen;
-    d <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    gen <- newStdGen;
-    f <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    gen <- newStdGen;
-    g <- pure $ 1:(snd $ randomFNStreamBound gen 0 10 200 zeros);
-    -- a <- pure $ snd (1, [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]++zeros);
-    -- b <- pure $ snd (3, [1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1]++zeros);
-    -- c <- pure $ snd (5, [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0]++zeros);
-    -- d <- pure $ snd (9, [1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1]++zeros);
-    -- f <- pure $ snd (1, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0]++zeros);
-    -- g <- pure $ snd (3, [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1]++zeros);
-    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;";
-    putStrLn $ "\na = " ++ sToString a 220 ++ ";\na;";
-    putStrLn $ "\nb = " ++ sToString b 220 ++ ";\nb;";
-    putStrLn $ "\nc = " ++ sToString c 220 ++ ";\nc;";
-    putStrLn $ "\nd = " ++ sToString d 220 ++ ";\nd;";
-    putStrLn $ "\nf = " ++ sToString f 220 ++ ";\nf;";
-    putStrLn $ "\ng = " ++ sToString g 220 ++ ";\ng;";
-    putStrLn $ "\naDb = " ++ sToString (sDivision a b) 1000 ++ ";\nabs(a/(b*phi) - aDb);";
-    putStrLn $ "\naTb = " ++ sToString (sMultiplication a b) 1000 ++ ";\nabs((a*b)/(phi^2) - aTb);";
-    putStrLn $ "\ncDd = " ++ sToString (sDivision c d) 1000 ++ ";\nabs(c/(d*phi) - cDd);";
-    putStrLn $ "\ncTd = " ++ sToString (sMultiplication c d) 1000 ++ ";\nabs((c*d)/(phi^2) - cTd);";
-    putStrLn $ "\nfDg = " ++ sToString (sDivision f g) 1000 ++ ";\nabs(f/(g*phi) - fDg);";
-    putStrLn $ "\nfTg = " ++ sToString (sMultiplication f g) 1000 ++ ";\nabs((f*g)/(phi^2) - fTg);";
-}
