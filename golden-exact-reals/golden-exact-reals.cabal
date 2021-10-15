@@ -1,4 +1,9 @@
-Name:				golden-exact-reals
-version:			0.1
+name:				golden-exact-reals
+version:			0.0.0
+synopsis:			Library for Exact Real Numbers using Golden Notation
+description:			Exact real numbers represented in golden notaion. The four basic operations are implemented. It is possible to convert from Integer to real
+category:			Math
+extra-source-files:  		README.md
 library
-	exposed-modules:	Data.GoldenExactReal
+	exposed-modules:	Data.GoldenExactReals
+	hs-source-dirs:      	src

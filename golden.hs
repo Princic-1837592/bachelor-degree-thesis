@@ -136,6 +136,9 @@ zero = (0, 1:1:zeros)
 one :: FNStream
 one = (1, 1:1:1:1:zeros)
 
+phi :: FNStream
+phi = (2, 1:1:1:zeros)
+
 two :: FNStream
 two = (2, 1:1:0:1:1:1:zeros)
 
@@ -163,10 +166,10 @@ nine = (3, 1:1:1:1:0:1:1:1:0:1:zeros)
 ten :: FNStream
 ten = (3, 1:1:1:1:1:1:0:1:0:1:zeros)
 
--- la funzione converte un intero in un reale in golden notation usando la seguente proprieta':
+-- this function converts an Integer into a golden real using the following property:
 -- x = dn, ..., d1, d0
 -- x = dn*10^n + ... + d1*10 + d0
--- grazie al tipo Integer l'input non ha limiti di grandezza
+-- thanks to the Integer type the input has no size limits
 integerToGolden :: Integer -> FNStream
 integerToGolden x = if signum x == 1 then real else multiplication minusOne real where
     integerToGolden' 0 r c = r
@@ -183,8 +186,8 @@ integerToGolden x = if signum x == 1 then real else multiplication minusOne real
         9 -> integerToGolden' (div x 10) (addition r (multiplication nine  c)) (multiplication c ten)
     real = integerToGolden' (abs x) zero one
 
--- la funzione converte una coppia (integrale, decimale) in un reale in golden notation
--- grazie al tipo Integer l'input non ha limiti di grandezza
+-- this function converts a pair (integral, decimal) into a golden real
+-- thanks to the Integer type the input has no size limits
 rationalToGolden :: Integer -> Integer -> FNStream
 rationalToGolden i d = if signum i == signum d then real else multiplication minusOne real where
     digits = length . show . abs
@@ -206,26 +209,26 @@ takeI n (x:xs) = if n <= 0 then [] else (x:takeI (n - 1) xs)
 approx :: FNStream -> Integer -> (Integer, [Bit])
 approx (z, as) n = (z, takeI n as)
 
-printApprox :: FNStream -> Integer -> String
-printApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
+stringApprox :: FNStream -> Integer -> String
+stringApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
     (z, as) = approx x n
 
-sToString :: SNStream -> Integer -> String
-sToString xs n = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
+sToString :: SNStream -> Integer -> String -> String
+sToString xs n p = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
     as = takeI n xs
     f x [] = x
     f x xs = x ++ ('+':xs)
-    f' 1 i = "phi^(" ++ show i ++ ")"
+    f' 1 i = p ++ "^(" ++ show i ++ ")"
     -- f' 0 _ = ""
 
 -- phi = (sqrt(5)+1)/2
-toString :: FNStream -> Integer -> String
-toString (z, as) n = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*phi^(2*(" ++ show z ++ "))" where
-    sums = sToString as n
+toString :: FNStream -> Integer -> String -> String
+toString (z, as) n p = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*"++ p ++ "^(2*(" ++ show z ++ "))" where
+    sums = sToString as n p
 
 -- https://keisan.casio.com/calculator
 toKeisanCasio :: FNStream -> Integer -> String -> String
-toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n ++ ";\n" ++ name ++ ";\n"
+toKeisanCasio x n name = "\n" ++ name ++ " = " ++ toString x n "phi" ++ ";\n" ++ name ++ ";\n"
 
 randomSNStream :: RandomGen g => g -> SNStream
 randomSNStream gen = (fromIntegral (mod bit 2)):randomSNStream gen' where (bit, gen') = genWord8 gen
@@ -243,11 +246,6 @@ randomFNStreamBound gen a b n s = ((mod x (b + 1 - a)) + a, if n >= 0 then (take
 
 
 main = do {
-    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;\n";
-    a <- pure 5;
-    b <- pure 354841599316846578573477239448643121619463341779640491211234;
-    putStrLn $ show a ++ "." ++ show b ++ ";";
-    putStrLn $ toKeisanCasio (integerToGolden a) 1000 "a";
-    putStrLn $ toKeisanCasio (integerToGolden b) 1000 "b";
-    putStrLn $ toKeisanCasio (rationalToGolden a b) 1000 "x";
+    putStrLn "\n\n\n\nphi = (sqrt(5)+1)/2;\nphi;\n";
+    putStrLn $ toKeisanCasio (rationalToGolden 79726126726 2347457) 1000 "x";
 }
