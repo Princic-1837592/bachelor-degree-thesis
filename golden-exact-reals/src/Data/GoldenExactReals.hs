@@ -227,13 +227,13 @@ toString (z, as) n p = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++
 
 -- FIBONACCI
 
-fibNoRecursion :: Integer -> (Integer, [Int])
-fibNoRecursion n = (n - 1, pattern (div (n - 1) 2) (if mod n 2 == 0 then [1] else [1,1])) where
-    pattern 0 s = s
-    pattern x s = 1:0:0:0:pattern (x - 1) s
+fibNoRecursion :: Integer -> (Integer, [Bit])
+fibNoRecursion n = (n - 1, digits (div (n - 1) 2) (if mod n 2 == 0 then [1] else [1, 1])) where
+    digits 0 s = s
+    digits x s = 1:0:0:0:digits (x - 1) s
 
-fibRecursion :: Integer -> (Integer, [Int])
-fibRecursion 1 = (0, [1,1])
+fibRecursion :: Integer -> (Integer, [Bit])
+fibRecursion 1 = (0, [1, 1])
 fibRecursion 2 = (1, [1])
 fibRecursion n = (f + 2, 1:0:0:0:fs) where
     (f, fs) = fibRecursion (n - 2)
