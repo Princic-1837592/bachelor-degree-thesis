@@ -45,32 +45,12 @@ statistica}
 
 \begin{abstract}
 Il tema della tesi è il calcolo dei numeri reali esatti, ovvero la possibilità 
-di eseguire operazioni usando numeri decimali con un numero di cifre 
+di eseguire operazioni usando numeri in notazione posizionale con un numero di cifre 
 potenzialmente infinito e non periodico con precisione arbitraria. Questo è un 
 problema importante in applicazioni pratiche che necessitano di fare calcoli 
 molto precisi nei quali un piccolo errore di approssimazione potrebbe propagarsi 
 e ingigantirsi nel susseguirsi dei calcoli, andando a impattare sulla precisione 
 del risultato finale della computazione.
-
-\medskip
-
-La computazione esatta fa uso di rappresentazioni e algoritmi tali che si possa 
-raggiungere una precisione arbitraria prima, durante e dopo l'esecuzione di una 
-serie di operazioni sui numeri reali. Queste rappresentazioni possono essere 
-molto diverse da quelle usate comunemente nei calcolatori e fanno uso di 
-strutture dati virtualmente infinite, chiamate stream. L'utilizzo di queste 
-rappresentazioni e rispettivi algoritmi potrebbe comportare una perdita dal 
-punto di vista dell'efficienza nell'esecuzione delle operazioni, ma offre il 
-vantaggio di non avere perdite di precisione durante tutto il processo di 
-calcolo
-
-\medskip
-
-La tesi è suddivisa in 3 parti fondamentali:\\
-introduzione al problema, con illustrazione di alcune possibili soluzioni;\\
-illustrazione della rappresentazione e degli algoritmi scelti per questa tesi;\\
-discussione dell'implementazione dei suddetti rappresentazione e algoritmi nel 
-linguaggio di programmazione funzionale Haskell.
 \end{abstract}
 
 
@@ -83,6 +63,18 @@ linguaggio di programmazione funzionale Haskell.
 
 
 
+\chapter{Introduzione}
+La computazione esatta fa uso di rappresentazioni e algoritmi tali che si possa raggiungere una precisione arbitraria prima, durante e dopo l'esecuzione di una serie di operazioni sui numeri reali. Queste rappresentazioni possono essere molto diverse da quelle usate comunemente nei calcolatori e fanno uso di strutture dati virtualmente infinite, chiamate stream. L'utilizzo di queste rappresentazioni e rispettivi algoritmi potrebbe comportare una perdita dal punto di vista dell'efficienza nell'esecuzione delle operazioni, ma offre il vantaggio di non avere perdite di precisione durante tutto il processo di calcolo.
+
+La tesi è suddivisa in 3 parti fondamentali:
+\begin{itemize}
+\item Computazione esatta sui numeri reali: in questo capitolo si introduce il problema del calcolo esatto di numeri reali e la principale rappresentazione usata nei moderni calcolatori per i numeri razionali, e il motivo per cui non è adatta a fare calcoli esatti. Si illustrano anche alcune possibili soluzioni per rappresentare e calcolare numeri reali a precisione arbitraria.
+\item La Golden Notation: in questo capitolo si illustrano la rappresentazione e gli algoritmi scelti per questa tesi.
+\item Implementazione: in questo capitolo si discute l'implementazione dei suddetti rappresentazione e algoritmi nel linguaggio di programmazione puramente funzionale Haskell.
+\end{itemize}
+
+
+
 \chapter{Computazione esatta sui numeri reali}
 
 
@@ -92,7 +84,7 @@ Il problema della rappresentazione dei numeri reali all'interno dei calcolatori 
 facilmente rappresentabili nel sistema binario come sequenze di bit. Questi, nella rappresentazione classica con un numero fisso di bit, in 
 base al numero di bit usati per rappresentarli hanno un limite superiore di 
 grandezza (e uno inferiore per i numeri con segno), ma rimangono comunque numeri 
-precisi, senza approssimazioni. Per questi due insiemi esistono anche rappresentazioni con un numero variabile di bit, che permettono di rappresentare naturali e interi di grandezza infinita grazie ad un incremento nel numero dei bit utilizzati nella rappresentazione, quando necessario. Esempi di questa rappresentazione sono gli interi in Python e Haskell.\\Non vale la stessa cosa per i numeri razionali 
+precisi, senza approssimazioni. Per questi due insiemi esistono anche rappresentazioni con un numero variabile di bit, che permettono di rappresentare naturali e interi di grandezza illimitata grazie ad un incremento nel numero dei bit utilizzati nella rappresentazione, quando necessario. Esempi di questa rappresentazione sono gli interi in Python e Haskell.\\Non vale la stessa cosa per i numeri razionali 
 ($\mathbb{Q}$) né tanto meno per i numeri reali ($\mathbb{R}$)
 
 I numeri razionali vengono solitamente rappresentati con una rappresentazione 
@@ -111,7 +103,7 @@ diversa da 2.
 
 \medskip
 
-I numeri razionali hanno la proprietà di poter essere rappresentati con una 
+In qualunque rappresentazione a base naturale (ad esempio decimale o binaria) i numeri razionali hanno la proprietà di poter essere rappresentati con una 
 quantità finita di memoria. Più aumenta la precisione della rappresentazione più memoria sarà necessario usare ma, comunque, 
 rimarrà sempre una quantità finita. Questo, però, non accade con i numeri 
 reali non razionali. I numeri reali non sono rappresentabili con una quantità 
@@ -367,7 +359,7 @@ Dal primo vincolo imposto si può dedurre che le rappresentazioni in base reale 
 
 
 \subsection{Rappresentazione in base $\phi$}\label{rappresentazione-phi}
-Il numero irrazionale scelto come base per la rappresentazione dei reali è $\phi$. La scelta di questo numero deriva dal fatto che $\phi$ è probabilmente quello che offre gli algoritmi più semplici per le operazioni aritmetiche \cite{PietroDiGianantonio}.
+Il numero irrazionale scelto come base per la rappresentazione dei reali è $\phi$. La scelta di questo numero deriva dal fatto che $\phi$, sotto opportune ipotesi, è quello che offre gli algoritmi più semplici per le operazioni aritmetiche \cite{PietroDiGianantonio}.
 $$\phi = \frac{\sqrt{5}+1}{2}$$
 L'utilizzo del numero $\phi$ come base rende possibile la rappresentazione e il calcolo dei numeri reali usando solamente due cifre: 0 e 1. I numeri in base $\phi$, dunque, appaiono come dei semplici numeri binari, soltanto che il peso di ogni cifra non è una potenza di 2 ma una potenza di $\phi$.
 
@@ -411,7 +403,7 @@ mentre tutti gli altri sono rappresentabili in infiniti modi grazie all'identit�
 
 
 \subsubsection{Numeri di Fibonacci}
-Una caratteristica di questa base è la facilità con cui si possono rappresentare e calcolare i numeri di Fibonacci. In generale, i numeri di Fibonacci sono dati dalla seguente funzione ricorsiva:
+Una curiosità di questa base è la facilità con cui si possono rappresentare e calcolare i numeri di Fibonacci. In generale, i numeri di Fibonacci sono dati dalla seguente funzione ricorsiva:
 \begin{equation*}
 \left\{
 \begin{aligned}
