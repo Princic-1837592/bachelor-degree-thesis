@@ -63,14 +63,14 @@ del risultato finale della computazione.
 
 
 
-\chapter{Introduzione}
+\chapter*{Introduzione}
 La computazione esatta fa uso di rappresentazioni e algoritmi tali che si possa raggiungere una precisione arbitraria prima, durante e dopo l'esecuzione di una serie di operazioni sui numeri reali. Queste rappresentazioni possono essere molto diverse da quelle usate comunemente nei calcolatori e fanno uso di strutture dati virtualmente infinite, chiamate stream. L'utilizzo di queste rappresentazioni e rispettivi algoritmi potrebbe comportare una perdita dal punto di vista dell'efficienza nell'esecuzione delle operazioni, ma offre il vantaggio di non avere perdite di precisione durante tutto il processo di calcolo.
 
 La tesi è suddivisa in 3 parti fondamentali:
 \begin{itemize}
-\item Computazione esatta sui numeri reali: in questo capitolo si introduce il problema del calcolo esatto di numeri reali e la principale rappresentazione usata nei moderni calcolatori per i numeri razionali, e il motivo per cui non è adatta a fare calcoli esatti. Si illustrano anche alcune possibili soluzioni per rappresentare e calcolare numeri reali a precisione arbitraria.
-\item La Golden Notation: in questo capitolo si illustrano la rappresentazione e gli algoritmi scelti per questa tesi.
-\item Implementazione: in questo capitolo si discute l'implementazione dei suddetti rappresentazione e algoritmi nel linguaggio di programmazione puramente funzionale Haskell.
+\item Computazione esatta sui numeri reali: in questo capitolo si introduce il problema del calcolo esatto di numeri reali e la principale rappresentazione usata nei moderni calcolatori per i numeri razionali, e il motivo per cui non è adatta a fare calcoli esatti. Si illustrano anche alcune possibili soluzioni per rappresentare e calcolare numeri reali a precisione arbitraria. Queste rappresentazioni introducono una ridondanza per rendere computabili le operazioni sui reali utilizzando una quantità finita di memoria.
+\item La Golden Notation: in questo capitolo si illustrano la rappresentazione e gli algoritmi scelti per questa tesi. La base per la Golden Notation è il numero reale $\phi$, scelto per la semplicità con cui si definiscono le operazioni aritmetiche. In questa base la ridondanza è data dall'uguaglianza $1.00 = 0.11 = 0.\overline{10}$.
+\item Implementazione: in questo capitolo si discute l'implementazione dei suddetti rappresentazione e algoritmi nel linguaggio di programmazione puramente funzionale Haskell. Oltre ad alcune operazioni della Golden Notation, vengono illustrate le funzioni per il calcolo dei numeri di Fibonacci e un algoritmo per convertire un numero razionale di grandezza illimitata in base 10 in un numero in Golden Notation.
 \end{itemize}
 
 
