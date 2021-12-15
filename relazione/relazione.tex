@@ -3,7 +3,7 @@
 % !TeX spellcheck = it_IT
 
 
-\documentclass[Lau]{sapthesis}
+\documentclass[Lau,oneside]{sapthesis}
 \usepackage[italian]{babel}
 \usepackage{amsfonts,amssymb,amsmath,amsthm,stmaryrd,mathtools}
 \usepackage{hyperref}
@@ -20,19 +20,24 @@
 
 \newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
 
-%\newenvironment{haskell}{\VerbatimEnvironment\noindent\begin{minipage}{\linewidth}\begin{minted}{Haskell}}{\end{minted}\end{minipage}}
-
 \title{Calcolo dei numeri reali esatti in Haskell}
 \author{Andrea Princic}
 \IDnumber{1837592}
 \course{Informatica}
-\courseorganizer{Facoltà di Ingegneria dell'informazione, informatica e 
-statistica}
+\courseorganizer{Facoltà di Ingegneria dell'informazione, informatica e statistica}
 \AcademicYear{2020/2021}
 \copyyear{2021}
 \advisor{Prof. Ivano Salvo}
 \authoremail{princic.1837592@studenti.uniroma1.it}
 \versiondate{\today}
+\examdate{14 Dicembre 2021}
+\examiner{Enrico Tronci}
+\examiner{Salvatore Pontarelli}
+\examiner{Gabriele Tolomei}
+\examiner{Adolfo Piperno}
+\examiner{Giuseppe Pirrò}
+\examiner{Daniele Gorla}
+\examiner{Ivano Salvo}
 
 \begin{document}
 
@@ -860,7 +865,7 @@ $$x_\phi = d_{n\phi} \cdot 10_\phi^n + \ldots + d_{1\phi} \cdot 10_\phi + d_{0\p
 per implementare la seguente funzione:
 \begin{minted}{Haskell}
 integerToGolden :: Integer -> FNStream
-integerToGolden x = if signum x == 1 then real else mul minusOne real where
+integerToGolden x = if signum x /= -1 then real else mul minusOne real where
     integerToGolden' 0 r c = r
     integerToGolden' x r c = case (mod x 10) of
         0 -> integerToGolden' (div x 10)      r                (mul c ten)
@@ -901,7 +906,8 @@ rationalToGolden i d = if sign then real else mul minusOne real where
     decimalPart = division (iToG (abs d)) (iterate (mul ten) one !! digits)
     real = addition integralPart decimalPart
     -- queste righe servono soltanto ad accorciare le righe precedenti
-    sign = signum i == signum d
+    sign = fixedSign i == fixedSign d
+    fixedSign x = if signum x == -1 then -1 else 1
     iToG = integerToGolden
     mul = multiplication
 \end{minted}

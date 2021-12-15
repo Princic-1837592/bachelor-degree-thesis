@@ -1,4 +1,5 @@
-module GoldenExactReals where
+module Data.GoldenExactReals where
+import Utils.Utils (iterateI, lengthI, takeI)
 
 
 
@@ -118,20 +119,23 @@ zeros = 0:zeros
 ones :: SNStream
 ones = 1:ones
 
+oneZeros :: SNStream
+oneZeros = 1:0:oneZeros
+
 minusOne :: FNStream
 minusOne = (0, zeros)
 
 zero :: FNStream
-zero = (0, 1:1:zeros)
+zero = (0, oneZeros)
 
 one :: FNStream
-one = (1, 1:1:1:1:zeros)
+one = (1, 1:1:oneZeros)
 
 phi :: FNStream
-phi = (2, 1:1:1:zeros)
+phi = (2, 1:oneZeros)
 
 two :: FNStream
-two = (2, 1:1:0:1:1:1:zeros)
+two = (2, 1:1:0:1:oneZeros)
 
 three :: FNStream
 three = (2, 1:1:1:1:0:1:zeros)
@@ -140,10 +144,10 @@ four :: FNStream
 four = (3, 1:1:0:1:0:1:0:1:zeros)
 
 five :: FNStream
-five = (3, 1:1:0:1:0:1:1:1:1:1:zeros)
+five = (3, 1:1:0:1:0:1:1:1:oneZeros)
 
 six :: FNStream
-six = (3, 1:1:0:1:1:1:0:1:1:1:zeros)
+six = (3, 1:1:0:1:1:1:0:1:oneZeros)
 
 seven :: FNStream
 seven = (3, 1:1:1:0:1:1:0:0:0:1:zeros)
@@ -162,7 +166,7 @@ ten = (3, 1:1:1:1:1:1:0:1:0:1:zeros)
 -- x = dn*10^n + ... + d1*10 + d0
 -- thanks to the Integer type the input has no size limits
 integerToGolden :: Integer -> FNStream
-integerToGolden x = if signum x == 1 then real else multiplication minusOne real where
+integerToGolden x = if signum x /= -1 then real else multiplication minusOne real where
     integerToGolden' 0 r c = r
     integerToGolden' x r c = case (mod x 10) of
         0 -> integerToGolden' (div x 10)           r                           (multiplication c ten)
@@ -179,45 +183,20 @@ integerToGolden x = if signum x == 1 then real else multiplication minusOne real
 
 -- this function converts a pair (integral, decimal) into a golden real
 -- thanks to the Integer type the input has no size limits
-rationalToGolden :: Integer -> Integer -> FNStream
-rationalToGolden i d = if signum i == signum d then real else multiplication minusOne real where
-    digits = length . show . abs
+-- it takes an additional Integer parameter s to specify the additional right-shift to apply to the decimal part
+-- this is required to represent numbers in the form: x.0y
+-- it may be interpreted as the number of zeros on the left of the decimal part
+rationalToGolden :: Integer -> Integer -> Integer -> FNStream
+rationalToGolden i d s = if signumFix i == signumFix d then real else multiplication minusOne real where
+    digits = lengthI . show . abs
     integralPart = integerToGolden (abs i)
-    decimalPart = division (integerToGolden (abs d)) (iterate (multiplication ten) one !! (digits d))
+    decimalPart = division (integerToGolden (abs d)) (iterateI (multiplication ten) one (digits d + s))
+    signumFix x = if signum x == -1 then -1 else 1
     real = addition integralPart decimalPart
 
-
-
-------------------------------
-
-
-
--- UTILS
-
--- take function to support Integer argument
-takeI :: Integer -> [a] -> [a]
-takeI n [] = []
-takeI n (x:xs) = if n <= 0 then [] else (x:takeI (n - 1) xs)
-
--- the second element is not infinite anymore
-approx :: FNStream -> Integer -> (Integer, [Bit])
-approx (z, as) n = (z, takeI n as)
-
-stringApprox :: FNStream -> Integer -> String
-stringApprox x n = "(" ++ show z ++ ", " ++ show as ++ ")" where
-    (z, as) = approx x n
-
-sToString :: SNStream -> Integer -> String -> String
-sToString xs n p = foldr f "" (map (uncurry f') (filter (\x -> fst x == 1) (zip as [-1,-2..]))) where
-    as = takeI n xs
-    f x [] = x
-    f x xs = x ++ ('+':xs)
-    f' 1 i = p ++ "^(" ++ show i ++ ")"
-
--- phi = (sqrt(5)+1)/2
-toString :: FNStream -> Integer -> String -> String
-toString (z, as) n p = "(-1" ++ (if length sums > 0 then "+" else "") ++ sums ++ ")*"++ p ++ "^(2*(" ++ show z ++ "))" where
-    sums = sToString as n p
+-- this function convers a decimal fraction into a golden real
+fractionToGolden :: Integer -> Integer -> FNStream
+fractionToGolden n d = division (integerToGolden n) (integerToGolden d)
 
 
 
