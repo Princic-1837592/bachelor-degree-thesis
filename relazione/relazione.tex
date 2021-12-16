@@ -899,15 +899,15 @@ $$x_{10} = d_n \cdot 10^n + \ldots + d_1 \cdot 10 + d_0 + \frac{d_{-1} \cdot 10^
 $$x_\phi = d_{n\phi} \cdot 10_\phi^n + \ldots + d_{1\phi} \cdot 10_\phi + d_{0\phi} + \frac{d_{-1\phi} \cdot 10_\phi^{m-1} + d_{-2\phi} \cdot 10_\phi^{m-2} + \ldots + d_{-m\phi}}{10_\phi^m}$$
 per implementare la seguente funzione:
 \begin{minted}{Haskell}
-rationalToGolden :: Integer -> Integer -> FNStream
-rationalToGolden i d = if sign then real else mul minusOne real where
-    digits = (length . show . abs) d
+rationalToGolden :: Integer -> Integer -> Integer -> FNStream
+rationalToGolden i d s = if sign then real else mul minusOne real where
+    digits = lengthI . show . abs
     integralPart = iToG (abs i)
-    decimalPart = division (iToG (abs d)) (iterate (mul ten) one !! digits)
+    decimalPart = division (iToG (abs d)) (iterateI (mul ten) one (digits d + s))
+    signumFix x = if signum x == -1 then -1 else 1
     real = addition integralPart decimalPart
     -- queste righe servono soltanto ad accorciare le righe precedenti
-    sign = fixedSign i == fixedSign d
-    fixedSign x = if signum x == -1 then -1 else 1
+    sign = signumFix i == signumFix d
     iToG = integerToGolden
     mul = multiplication
 \end{minted}
