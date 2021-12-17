@@ -126,16 +126,16 @@ minusOne :: FNStream
 minusOne = (0, zeros)
 
 zero :: FNStream
-zero = (0, oneZeros)
+zero = (0, 1:1:zeros)
 
 one :: FNStream
-one = (1, 1:1:oneZeros)
+one = (1, 1:1:1:1:zeros)
 
 phi :: FNStream
-phi = (2, 1:oneZeros)
+phi = (2, 1:1:1:zeros)
 
 two :: FNStream
-two = (2, 1:1:0:1:oneZeros)
+two = (2, 1:1:0:1:1:1:zeros)
 
 three :: FNStream
 three = (2, 1:1:1:1:0:1:zeros)
@@ -144,10 +144,10 @@ four :: FNStream
 four = (3, 1:1:0:1:0:1:0:1:zeros)
 
 five :: FNStream
-five = (3, 1:1:0:1:0:1:1:1:oneZeros)
+five = (3, 1:1:0:1:0:1:1:1:1:1:zeros)
 
 six :: FNStream
-six = (3, 1:1:0:1:1:1:0:1:oneZeros)
+six = (3, 1:1:0:1:1:1:0:1:1:1:zeros)
 
 seven :: FNStream
 seven = (3, 1:1:1:0:1:1:0:0:0:1:zeros)
